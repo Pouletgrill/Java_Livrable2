@@ -32,8 +32,8 @@ public class Connexion implements Runnable
                      client.getOutputStream()));
 
          reader = new BufferedReader(
-                     new InputStreamReader(
-                     client.getInputStream()));
+              new InputStreamReader(
+                      client.getInputStream()));
 
          //Trouve et met ip addresse dans la string ip           
          Ip = client.getInetAddress().getHostAddress();

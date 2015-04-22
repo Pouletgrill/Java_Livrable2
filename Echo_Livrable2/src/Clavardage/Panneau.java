@@ -11,7 +11,10 @@ import java.net.Socket;
 public class Panneau extends JPanel {
 
 
-
+    static PrintWriter writer = null;
+    static BufferedReader reader= null;
+    static JTextField fieldTexte;
+    static JTextArea zoneMessages;
 
     public Panneau() {
         setLayout(new GridLayout(0, 1)); // une seule colonne
@@ -31,7 +34,7 @@ public class Panneau extends JPanel {
         pan0.add(cboxResterConnecte);
 
         // rangée 1
-        final JTextArea zoneMessages = new JTextArea(20,40);
+        zoneMessages = new JTextArea(20,40);
         JScrollPane zoneDefilement = new JScrollPane(zoneMessages);
         JPanel pan1 = new JPanel();
         add(pan0);
@@ -40,7 +43,7 @@ public class Panneau extends JPanel {
 
         // rangée 2
         JLabel labelTexte = new JLabel("Votre texte");
-        JTextField fieldTexte = new JTextField(40);
+        fieldTexte = new JTextField(40);
 
         JButton boutonEnvoyer  = new JButton("Envoyer");
         boutonEnvoyer.addActionListener(new ActionListener() {
@@ -61,8 +64,15 @@ public class Panneau extends JPanel {
         boutonConnexion.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
-                Connecter(fieldAdresse.getText(), 50000);
+                if(!fieldAdresse.getText().isEmpty())
+                {
+                    Connecter(fieldAdresse.getText(), 50000);
+                    zoneMessages.append("Vous êtes maintenant connecter");
+                }
+                else
+                {
+                    zoneMessages.append("Veuiller entrer l'ip adresse de votre serveur");
+                }
 
             }
         });
@@ -83,13 +93,13 @@ public class Panneau extends JPanel {
 
     public void Envoyer()
     {
-
+        writer.println(fieldTexte.getText());
     }
 
 
     public static void Connecter(String Ip, int port)
     {
-        PrintWriter writer = null;
+
         try
         {
             InetSocketAddress Ipsocket = new InetSocketAddress(Ip,port);
@@ -99,7 +109,39 @@ public class Panneau extends JPanel {
             writer = new PrintWriter(
                     new OutputStreamWriter(
                             client.getOutputStream()));
+            reader = new BufferedReader(
+                    new InputStreamReader(
+                            client.getInputStream()));
 
+            BufferedReader clavier = new BufferedReader(
+                    new InputStreamReader(System.in));
+            boolean fini =false;
+            String Texte =null;
+            zoneMessages.append(reader.readLine());
+
+            while(!fini)
+            {
+                Texte = clavier.readLine();
+                if(Texte!=null)
+                {
+                    writer.println(Texte);
+                    writer.flush();
+                    if(Texte.trim().equalsIgnoreCase("Q"))
+                    {
+                        fini = true;
+                    }
+
+                }
+                else
+                {
+                    fini =true;
+                }
+            }
+
+            writer.close();
+            reader.close();
+            clavier.close();
+            client.close();
 
         }
         catch(IOException ex)
