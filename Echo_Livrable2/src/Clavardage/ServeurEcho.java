@@ -1,3 +1,4 @@
+package  Clavardage;
 //ServeurEcho
 //----------------
 //Xavier Brosseau
@@ -9,18 +10,19 @@ import java.util.ListIterator;
 
 public class ServeurEcho
 { 
-   //Création de l'array liste
-   ArrayList<Connexion> ListeConnexion = new ArrayList<>();
+   //Crï¿½ation de l'array liste
+   ArrayList<Connexion> ListeConnexion = new ArrayList();
    final int MAXCONNECT = 5;
+
    
    public void Serveur()
    {
-   //Instanciation du serveur socket
+
+      //Instanciation du serveur socket
       ServerSocket clientServer;
       
       try
       {
-	 
          clientServer = new ServerSocket(50000);
         
          Terminateur QStop = new Terminateur();
@@ -28,16 +30,16 @@ public class ServeurEcho
          threadLiseur.setDaemon(true);
          threadLiseur.start(); 
 	
-	 //Boucle de serveur. Est en fonction tant que "q" n'est pas entrer.
+	     //Boucle de serveur. Est en fonction tant que "q" n'est pas entrer.
          while (threadLiseur.isAlive())
          {
             try
             {
-	       //Empêche la connection de plus de 5 usager.
+	       //Empï¿½che la connection de plus de 5 usager.
                if (ListeConnexion.size() < MAXCONNECT)
                {  
 		  //Timeout sur le serveur                
-                  clientServer.setSoTimeout(500);                  
+                  clientServer.setSoTimeout(500);
                   Socket client = clientServer.accept();
                   //Timeout sur le client
                   client.setSoTimeout(90000);
@@ -71,7 +73,7 @@ public class ServeurEcho
          ListeConnexion.get(i).Ecrire(Message);
       }
    }
-   //Enlève la connexion de la array list
+   //Enlï¿½ve la connexion de la array list
    public void TuerConnexion(Connexion conn)   
    {
       ListeConnexion.remove(conn);

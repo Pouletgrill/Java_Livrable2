@@ -1,3 +1,4 @@
+package  Clavardage;
 //Connexion
 //----------------
 //Xavier Brosseau
@@ -14,10 +15,10 @@ public class Connexion implements Runnable
    //Instanciation des writers et readers
    PrintWriter writer = null;
    BufferedReader reader = null;
-   //Création de string pour ip et pour Nom
+   //Crï¿½ation de string pour ip et pour Nom
    String Nom;
    String Ip;
-   //Création d'une variable ServeurEcho pour chaque utilisateur
+   //Crï¿½ation d'une variable ServeurEcho pour chaque utilisateur
    ServeurEcho serveurEcho_;
    
    
@@ -25,18 +26,19 @@ public class Connexion implements Runnable
    {     
       try
       {
-         //Création des writers et readers
+         //Crï¿½ation des writers et readers
          writer = new PrintWriter(
                      new OutputStreamWriter(
                      client.getOutputStream()));
+
          reader = new BufferedReader(
                      new InputStreamReader(
                      client.getInputStream()));
+
          //Trouve et met ip addresse dans la string ip           
          Ip = client.getInetAddress().getHostAddress();
-	//Met les infos de notre serveur dans la variable serveur du client
-         serveurEcho_ = serveurEcho;           
-         
+	     //Met les infos de notre serveur dans la variable serveur du client
+         serveurEcho_ = serveurEcho;
       }
       catch(SocketTimeoutException ez)
       {
@@ -63,12 +65,7 @@ public class Connexion implements Runnable
      boolean vide = false;
       try
       {
-	//Demande le nom d'utilisateur à l'utilisateur
-         writer.println("Veuillez entrer votre nom d'utilisateur");
-         writer.flush();
-	//lit le nom de l'usager
-         Nom = reader.readLine(); 
-         //Assure que le nom soit au maximum 8 charactères
+         //Assure que le nom soit au maximum 8 charactï¿½res
          if(Nom.length() > 8)
          {
             Nom  =  Nom.substring(0,8);        
@@ -82,14 +79,14 @@ public class Connexion implements Runnable
          serveurEcho_.Distribuer(Nom + " vient de se joindre a la conversation"); 
          do 
          {         
-           //lit le message envoyé par le client et le met dans la variable E
+           //lit le message envoyï¿½ par le client et le met dans la variable E
             E = reader.readLine();
-            //S'assure que le message ne dépasse pas 80
+            //S'assure que le message ne dï¿½passe pas 80
             if(E.length() > 80)
             {
                E = E.substring(0,80);
             }
-	    //Si le message et vide met la variable qui met fin à la connexion à true
+	    //Si le message et vide met la variable qui met fin ï¿½ la connexion ï¿½ true
             if(E.length() == 0)
             {
                vide = true;               
@@ -113,12 +110,12 @@ public class Connexion implements Runnable
       {          
          try
          {
-	    //Envoie le message de déconnexion à tout le monde
+	    //Envoie le message de dï¿½connexion ï¿½ tout le monde
             serveurEcho_.Distribuer(Nom + "a quitte le chat room");
 	    //Ferme le writer et le reader
             writer.close();
             reader.close();
-	    //Enlève la connexion de la listeArray
+	    //Enlï¿½ve la connexion de la listeArray
             serveurEcho_.TuerConnexion(this);
             System.out.println("Client deconnecte"); 
          }

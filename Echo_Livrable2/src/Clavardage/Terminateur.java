@@ -1,3 +1,4 @@
+package  Clavardage;
 //Terminateur
 //----------------
 //Xavier Brosseau
