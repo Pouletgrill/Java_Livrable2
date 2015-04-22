@@ -10,14 +10,7 @@ import java.net.Socket;
 
 public class Panneau extends JPanel {
 
-   static PrintWriter writer =null;
-   static BufferedReader reader = null;
 
-    BufferedReader clavier = new BufferedReader(
-            new InputStreamReader(System.in));
-
-    boolean fini = false;
-    String Texte = null;
 
 
     public Panneau() {
@@ -69,8 +62,7 @@ public class Panneau extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                LancerClient(fieldAdresse.getText(), 50000);
-                zoneMessages.append("Vous êtes connecter");
+                Connecter(fieldAdresse.getText(), 50000);
 
             }
         });
@@ -91,65 +83,30 @@ public class Panneau extends JPanel {
 
     public void Envoyer()
     {
-        try
-        {
-         System.out.println(reader.readLine());
 
-         while (!fini) {
-             Texte = clavier.readLine();
-
-             if (Texte != null) {
-                 writer.println(Texte);
-                 writer.flush();
-
-                 if (Texte.trim().equalsIgnoreCase("Q")) ;
-                 {
-                     fini = true;
-                 }
-                 System.out.println(reader.readLine());
-
-             } else {
-                 fini = true;
-             }
-
-             writer.close();
-             reader.close();
-             clavier.close();
-         }
-         }catch(IOException exc)
-         {
-
-         }
     }
 
 
-    public static void LancerClient(String Ip, int port)
+    public static void Connecter(String Ip, int port)
     {
-
-        InetSocketAddress IpSocket = null;
-        Socket socket = null;
-
+        PrintWriter writer = null;
         try
         {
-           IpSocket = new InetSocketAddress(Ip,port);
-                socket = new Socket();
+            InetSocketAddress Ipsocket = new InetSocketAddress(Ip,port);
+            Socket client = new Socket();
+            client.connect(Ipsocket);
 
-                socket.connect(IpSocket);
-
-                writer = new PrintWriter(
-                        new OutputStreamWriter(
-                                socket.getOutputStream()));
-
-                reader = new BufferedReader(
-                        new InputStreamReader(
-                                socket.getInputStream()));
+            writer = new PrintWriter(
+                    new OutputStreamWriter(
+                            client.getOutputStream()));
 
 
-        }catch(IOException ex)
-        {
-            System.err.println(ex);
-            System.exit(1);
         }
+        catch(IOException ex)
+        {
+
+        }
+
     }
 
 }
