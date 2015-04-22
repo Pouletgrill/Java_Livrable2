@@ -11,10 +11,11 @@ import java.net.Socket;
 public class Panneau extends JPanel {
 
 
-    static PrintWriter writer = null;
-    static BufferedReader reader= null;
-    static JTextField fieldTexte;
-    static JTextArea zoneMessages;
+
+    PrintWriter writer = null;
+    Thread RetourMessage = null;
+    Socket client =null;
+    BufferedReader reader = null;
 
     public Panneau() {
         setLayout(new GridLayout(0, 1)); // une seule colonne
@@ -34,7 +35,7 @@ public class Panneau extends JPanel {
         pan0.add(cboxResterConnecte);
 
         // rangée 1
-        zoneMessages = new JTextArea(20,40);
+        final JTextArea zoneMessages = new JTextArea(20,40);
         JScrollPane zoneDefilement = new JScrollPane(zoneMessages);
         JPanel pan1 = new JPanel();
         add(pan0);
@@ -43,13 +44,15 @@ public class Panneau extends JPanel {
 
         // rangée 2
         JLabel labelTexte = new JLabel("Votre texte");
-        fieldTexte = new JTextField(40);
+        final JTextField fieldTexte = new JTextField(40);
 
         JButton boutonEnvoyer  = new JButton("Envoyer");
         boutonEnvoyer.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Envoyer();
+                writer.println(fieldTexte.getText());
+                writer.flush();
+                fieldTexte.setText("");
             }
         });
 
@@ -60,20 +63,53 @@ public class Panneau extends JPanel {
         add(pan2);
 
         // rangée 3
-        JButton boutonConnexion  = new JButton("Connecter");
+        JButton boutonConnexion  = new JButton("Connecter/Déconnecter");
         boutonConnexion.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(!fieldAdresse.getText().isEmpty())
-                {
-                    Connecter(fieldAdresse.getText(), 50000);
-                    zoneMessages.append("Vous êtes maintenant connecter");
-                }
-                else
-                {
-                    zoneMessages.append("Veuiller entrer l'ip adresse de votre serveur");
-                }
 
+                if(client == null)
+                {
+                    try
+                    {
+                        InetSocketAddress Ipsocket = new InetSocketAddress(fieldAdresse.getText(),50000);
+                        client = new Socket();
+                        client.connect(Ipsocket);
+
+                        writer = new PrintWriter(
+                                new OutputStreamWriter(
+                                        client.getOutputStream()));
+                        reader = new BufferedReader(
+                                new InputStreamReader(
+                                        client.getInputStream()));
+
+                        ThreadRetourMessage RetourMess = new ThreadRetourMessage(reader,zoneMessages);
+                        RetourMessage = new Thread(RetourMess);
+                        RetourMessage.setDaemon(true);
+                        RetourMessage.start();
+
+                        writer.println("L'utilisateur " + fieldPseudo.getText()+" vient de ce connecter");
+                        writer.flush();
+
+                    }
+                    catch(IOException ex)
+                    {
+                        System.out.println(ex);
+                    }
+
+                }else
+                {
+                    try
+                    {
+                        writer.close();
+                        reader.close();
+                        client.close();
+                        zoneMessages.append("Vous êtes Maintenant déconnecter");
+                    }catch(IOException ex)
+                    {
+
+                    }
+                }
             }
         });
 
@@ -89,66 +125,6 @@ public class Panneau extends JPanel {
         pan3.add(boutonConnexion);
         pan3.add(boutonQuitter);
         add(pan3);
-    }
-
-    public void Envoyer()
-    {
-        writer.println(fieldTexte.getText());
-    }
-
-
-    public static void Connecter(String Ip, int port)
-    {
-
-        try
-        {
-            InetSocketAddress Ipsocket = new InetSocketAddress(Ip,port);
-            Socket client = new Socket();
-            client.connect(Ipsocket);
-
-            writer = new PrintWriter(
-                    new OutputStreamWriter(
-                            client.getOutputStream()));
-            reader = new BufferedReader(
-                    new InputStreamReader(
-                            client.getInputStream()));
-
-            BufferedReader clavier = new BufferedReader(
-                    new InputStreamReader(System.in));
-            boolean fini =false;
-            String Texte =null;
-            zoneMessages.append(reader.readLine());
-
-            while(!fini)
-            {
-                Texte = clavier.readLine();
-                if(Texte!=null)
-                {
-                    writer.println(Texte);
-                    writer.flush();
-                    if(Texte.trim().equalsIgnoreCase("Q"))
-                    {
-                        fini = true;
-                    }
-
-                }
-                else
-                {
-                    fini =true;
-                }
-            }
-
-            writer.close();
-            reader.close();
-            clavier.close();
-            client.close();
-
-        }
-        catch(IOException ex)
-        {
-
-        }
-
     }
 
 }
