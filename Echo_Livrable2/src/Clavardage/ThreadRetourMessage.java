@@ -20,10 +20,9 @@ public class ThreadRetourMessage implements Runnable {
         try
         {
             String E="";
-            while(ReaderOfServer.readLine()!=null)
+            while(!Thread.interrupted() &&(E= ReaderOfServer.readLine())!=null)
             {
-                E = ReaderOfServer.readLine();
-                ChatField.append(E);
+                ChatField.append(E + "\n");
             }
         }
         catch (IOException err)

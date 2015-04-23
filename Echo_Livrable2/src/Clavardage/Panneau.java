@@ -5,8 +5,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.lang.Thread;
 
 public class Panneau extends JPanel {
 
@@ -14,6 +16,7 @@ public class Panneau extends JPanel {
 
     PrintWriter writer = null;
     Thread RetourMessage = null;
+    Thread ResterConnecter = null;
     Socket client =null;
     BufferedReader reader = null;
 
@@ -25,7 +28,8 @@ public class Panneau extends JPanel {
         final JTextField fieldAdresse = new JTextField(16);
         JLabel labelPseudo = new JLabel("Pseudo");
         final JTextField fieldPseudo = new JTextField(16);
-        JCheckBox cboxResterConnecte = new JCheckBox("Rester connecté");
+        final JCheckBox cboxResterConnecte = new JCheckBox("Rester connecté");
+
         JPanel pan0 = new JPanel();
         add(pan0);
         pan0.add(labelAdresse);
@@ -45,14 +49,35 @@ public class Panneau extends JPanel {
         // rangée 2
         JLabel labelTexte = new JLabel("Votre texte");
         final JTextField fieldTexte = new JTextField(40);
+        fieldTexte.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try
+                {
+                    writer.println(fieldTexte.getText());
+                    writer.flush();
+                    fieldTexte.setText("");
+                }catch(Exception ey)
+                {
+                    zoneMessages.append("Vous n'êtes pas encore connecter! \n");
+                }
+            }
+        });
 
         JButton boutonEnvoyer  = new JButton("Envoyer");
         boutonEnvoyer.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                writer.println(fieldTexte.getText());
-                writer.flush();
-                fieldTexte.setText("");
+                try
+                {
+                    writer.println(fieldTexte.getText());
+                    writer.flush();
+                    fieldTexte.setText("");
+                }catch(Exception ey)
+                {
+                    zoneMessages.append("Vous n'êtes pas encore connecter! \n");
+                }
+
             }
         });
 
@@ -67,48 +92,51 @@ public class Panneau extends JPanel {
         boutonConnexion.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                try {
+                    if (client == null) {
+                            zoneMessages.setText("");
 
-                if(client == null)
+
+                            InetSocketAddress Ipsocket = new InetSocketAddress(fieldAdresse.getText(), 50000);
+                            client = new Socket();
+                            client.connect(Ipsocket);
+
+
+
+                            writer = new PrintWriter(
+                                    new OutputStreamWriter(
+                                            client.getOutputStream()));
+                            reader = new BufferedReader(
+                                    new InputStreamReader(
+                                            client.getInputStream()));
+
+
+                            writer.println(fieldPseudo.getText());
+                            writer.flush();
+
+                            ThreadRetourMessage RetourMess = new ThreadRetourMessage(reader, zoneMessages);
+                            RetourMessage = new Thread(RetourMess);
+                            RetourMessage.setDaemon(true);
+                            RetourMessage.start();
+                    }
+                    else
+                    {
+
+                            RetourMessage.interrupt();
+                            writer.close();
+                            reader.close();
+                            client.close();
+                            client =null;
+                            reader =null;
+                            writer =null;
+
+                            zoneMessages.append("Vous êtes Maintenant déconnecter \n");
+
+                    }
+                } catch (IOException ex)
                 {
-                    try
-                    {
-                        InetSocketAddress Ipsocket = new InetSocketAddress(fieldAdresse.getText(),50000);
-                        client = new Socket();
-                        client.connect(Ipsocket);
-
-                        writer = new PrintWriter(
-                                new OutputStreamWriter(
-                                        client.getOutputStream()));
-                        reader = new BufferedReader(
-                                new InputStreamReader(
-                                        client.getInputStream()));
-
-                        ThreadRetourMessage RetourMess = new ThreadRetourMessage(reader,zoneMessages);
-                        RetourMessage = new Thread(RetourMess);
-                        RetourMessage.setDaemon(true);
-                        RetourMessage.start();
-
-                        writer.println("L'utilisateur " + fieldPseudo.getText()+" vient de ce connecter");
-                        writer.flush();
-
-                    }
-                    catch(IOException ex)
-                    {
-                        System.out.println(ex);
-                    }
-
-                }else
-                {
-                    try
-                    {
-                        writer.close();
-                        reader.close();
-                        client.close();
-                        zoneMessages.append("Vous êtes Maintenant déconnecter");
-                    }catch(IOException ex)
-                    {
-
-                    }
+                    zoneMessages.append("Invalide Ip adresse \n");
+                    client =null;
                 }
             }
         });
@@ -117,7 +145,23 @@ public class Panneau extends JPanel {
         boutonQuitter.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.exit(0);
+
+                try
+                {
+                    System.exit(0);
+                    RetourMessage.interrupt();
+                    writer.close();
+                    reader.close();
+                    client.close();
+                    client =null;
+                    reader =null;
+                    writer =null;
+
+
+                } catch (IOException ex) {
+
+                }
+
             }
         });
 
@@ -125,6 +169,24 @@ public class Panneau extends JPanel {
         pan3.add(boutonConnexion);
         pan3.add(boutonQuitter);
         add(pan3);
+
+        cboxResterConnecte.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (cboxResterConnecte.isSelected()) {
+
+                    ThreadResterConnecter ResterConn = new ThreadResterConnecter(writer);
+                    ResterConnecter = new Thread(ResterConn);
+                    ResterConnecter.setDaemon(true);
+                    ResterConnecter.start();
+                }
+                else
+                {
+                    ResterConnecter.interrupt();
+                }
+
+            }
+        });
     }
 
 }
