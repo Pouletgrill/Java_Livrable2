@@ -16,6 +16,7 @@ public class Client {
         c.add(panneau);
         frame.pack();
         frame.setVisible(true);
+
     }
 
     public static void main(String[] args) {

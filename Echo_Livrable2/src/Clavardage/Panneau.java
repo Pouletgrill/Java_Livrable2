@@ -30,6 +30,7 @@ public class Panneau extends JPanel {
         final JTextField fieldPseudo = new JTextField(16);
         final JCheckBox cboxResterConnecte = new JCheckBox("Rester connecté");
 
+
         JPanel pan0 = new JPanel();
         add(pan0);
         pan0.add(labelAdresse);
@@ -37,6 +38,8 @@ public class Panneau extends JPanel {
         pan0.add(labelPseudo);
         pan0.add(fieldPseudo);
         pan0.add(cboxResterConnecte);
+        cboxResterConnecte.setEnabled(false);
+
 
         // rangée 1
         final JTextArea zoneMessages = new JTextArea(20,40);
@@ -54,9 +57,12 @@ public class Panneau extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 try
                 {
-                    writer.println(fieldTexte.getText());
-                    writer.flush();
-                    fieldTexte.setText("");
+                    if(fieldTexte.getText().length()!=0) {
+                        writer.println(fieldTexte.getText());
+                        writer.flush();
+                        fieldTexte.setText("");
+                    }
+
                 }catch(Exception ey)
                 {
                     zoneMessages.append("Vous n'êtes pas encore connecter! \n");
@@ -70,9 +76,12 @@ public class Panneau extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 try
                 {
-                    writer.println(fieldTexte.getText());
-                    writer.flush();
-                    fieldTexte.setText("");
+                    if(fieldTexte.getText().length()!=0)
+                    {
+                        writer.println(fieldTexte.getText());
+                        writer.flush();
+                        fieldTexte.setText("");
+                    }
                 }catch(Exception ey)
                 {
                     zoneMessages.append("Vous n'êtes pas encore connecter! \n");
@@ -93,7 +102,8 @@ public class Panneau extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    if (client == null) {
+                    if ( client == null ) {
+
                             zoneMessages.setText("");
 
 
@@ -118,25 +128,22 @@ public class Panneau extends JPanel {
                             RetourMessage = new Thread(RetourMess);
                             RetourMessage.setDaemon(true);
                             RetourMessage.start();
+                            cboxResterConnecte.setEnabled(true);
                     }
                     else
                     {
-
+                            writer.println("");
+                            writer.flush();
                             RetourMessage.interrupt();
-                            writer.close();
-                            reader.close();
-                            client.close();
-                            client =null;
-                            reader =null;
-                            writer =null;
-
-                            zoneMessages.append("Vous êtes Maintenant déconnecter \n");
-
+                            client = null;
+                            reader = null;
+                            writer = null;
+                            cboxResterConnecte.setEnabled(false);
                     }
                 } catch (IOException ex)
                 {
                     zoneMessages.append("Invalide Ip adresse \n");
-                    client =null;
+                    client = null;
                 }
             }
         });
@@ -153,10 +160,6 @@ public class Panneau extends JPanel {
                     writer.close();
                     reader.close();
                     client.close();
-                    client =null;
-                    reader =null;
-                    writer =null;
-
 
                 } catch (IOException ex) {
 
@@ -173,17 +176,19 @@ public class Panneau extends JPanel {
         cboxResterConnecte.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (cboxResterConnecte.isSelected()) {
 
-                    ThreadResterConnecter ResterConn = new ThreadResterConnecter(writer);
-                    ResterConnecter = new Thread(ResterConn);
-                    ResterConnecter.setDaemon(true);
-                    ResterConnecter.start();
-                }
-                else
-                {
-                    ResterConnecter.interrupt();
-                }
+                       if (cboxResterConnecte.isSelected())
+                       {
+
+                           ThreadResterConnecter ResterConn = new ThreadResterConnecter(writer);
+                           ResterConnecter = new Thread(ResterConn);
+                           ResterConnecter.setDaemon(true);
+                           ResterConnecter.start();
+                       }
+                       else
+                       {
+                           ResterConnecter.interrupt();
+                       }
 
             }
         });
