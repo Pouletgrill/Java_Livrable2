@@ -42,7 +42,7 @@ public class Panneau extends JPanel {
 
 
         // rangée 1
-        final JTextArea zoneMessages = new JTextArea(20,40);
+        final JTextArea zoneMessages = new JTextArea(8,40);
         JScrollPane zoneDefilement = new JScrollPane(zoneMessages);
         JPanel pan1 = new JPanel();
         add(pan0);
