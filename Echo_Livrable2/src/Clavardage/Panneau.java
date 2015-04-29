@@ -5,10 +5,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.lang.Thread;
 
 public class Panneau extends JPanel {
 
@@ -92,6 +90,11 @@ public class Panneau extends JPanel {
                 }catch(Exception ey)
                 {
                     zoneMessages.append("Vous n'êtes pas encore connecter! \n");
+                    client=null;
+                    reader=null;
+                    writer=null;
+                    RetourMessage.interrupt();
+                    cboxResterConnecte.setEnabled(false);
                 }
 
             }
