@@ -57,15 +57,22 @@ public class Panneau extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 try
                 {
-                    if(fieldTexte.getText().length()!=0) {
+                    if(fieldTexte.getText().length()!=0)
+					{
                         writer.println(fieldTexte.getText());
                         writer.flush();
                         fieldTexte.setText("");
                     }
-
                 }catch(Exception ey)
                 {
-                    zoneMessages.append("Vous n'êtes pas encore connecter! \n");
+                    zoneMessages.append("Vous n'êtes pas connecter! \n");
+                    client=null;
+                    reader=null;
+                    writer=null;
+                    RetourMessage.interrupt();
+                    cboxResterConnecte.setEnabled(false);
+
+
                 }
             }
         });
@@ -102,48 +109,54 @@ public class Panneau extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    if ( client == null ) {
-
-                            zoneMessages.setText("");
-
-
-                            InetSocketAddress Ipsocket = new InetSocketAddress(fieldAdresse.getText(), 50000);
-                            client = new Socket();
-                            client.connect(Ipsocket);
-
-
-
-                            writer = new PrintWriter(
-                                    new OutputStreamWriter(
-                                            client.getOutputStream()));
-                            reader = new BufferedReader(
-                                    new InputStreamReader(
-                                            client.getInputStream()));
-
-
-                            writer.println(fieldPseudo.getText());
+                    if ( client != null )
+                    {
+                        try
+                        {
+                            writer.println("");
                             writer.flush();
 
-                            ThreadRetourMessage RetourMess = new ThreadRetourMessage(reader, zoneMessages);
-                            RetourMessage = new Thread(RetourMess);
-                            RetourMessage.setDaemon(true);
-                            RetourMessage.start();
-                            cboxResterConnecte.setEnabled(true);
+                        }catch(Exception ez)
+                        {
+
+                        }
+                        RetourMessage.interrupt();
+                        client = null;
+                        reader = null;
+                        writer = null;
+                        cboxResterConnecte.setEnabled(false);
                     }
                     else
                     {
-                            writer.println("");
-                            writer.flush();
-                            RetourMessage.interrupt();
-                            client = null;
-                            reader = null;
-                            writer = null;
-                            cboxResterConnecte.setEnabled(false);
+
+                        zoneMessages.setText("");
+
+                        InetSocketAddress Ipsocket = new InetSocketAddress(fieldAdresse.getText(), 50000);
+                        client = new Socket();
+                        client.connect(Ipsocket);
+
+                        writer = new PrintWriter(
+                                new OutputStreamWriter(
+                                        client.getOutputStream()));
+                        reader = new BufferedReader(
+                                new InputStreamReader(
+                                        client.getInputStream()));
+
+                        writer.println(fieldPseudo.getText());
+                        writer.flush();
+
+                        ThreadRetourMessage RetourMess = new ThreadRetourMessage(reader, zoneMessages);
+                        RetourMessage = new Thread(RetourMess);
+                        RetourMessage.setDaemon(true);
+                        RetourMessage.start();
+                        cboxResterConnecte.setEnabled(true);
                     }
                 } catch (IOException ex)
                 {
                     zoneMessages.append("Invalide Ip adresse \n");
                     client = null;
+					reader = null;
+                    writer = null;
                 }
             }
         });
