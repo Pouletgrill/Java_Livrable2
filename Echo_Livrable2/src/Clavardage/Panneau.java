@@ -109,26 +109,8 @@ public class Panneau extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    if ( client != null )
+                    if ( client == null || client.isClosed() )
                     {
-                        try
-                        {
-                            writer.println("");
-                            writer.flush();
-
-                        }catch(Exception ez)
-                        {
-
-                        }
-                        RetourMessage.interrupt();
-                        client = null;
-                        reader = null;
-                        writer = null;
-                        cboxResterConnecte.setEnabled(false);
-                    }
-                    else
-                    {
-
                         zoneMessages.setText("");
 
                         InetSocketAddress Ipsocket = new InetSocketAddress(fieldAdresse.getText(), 50000);
@@ -145,11 +127,22 @@ public class Panneau extends JPanel {
                         writer.println(fieldPseudo.getText());
                         writer.flush();
 
-                        ThreadRetourMessage RetourMess = new ThreadRetourMessage(reader, zoneMessages);
+                        ThreadRetourMessage RetourMess = new ThreadRetourMessage(reader, zoneMessages,writer,client,cboxResterConnecte);
                         RetourMessage = new Thread(RetourMess);
                         RetourMessage.setDaemon(true);
                         RetourMessage.start();
                         cboxResterConnecte.setEnabled(true);
+                    }
+                    else
+                    {
+
+                        writer.println("");
+                        writer.flush();
+                        RetourMessage.interrupt();
+                        client = null;
+                        reader = null;
+                        writer = null;
+                        cboxResterConnecte.setEnabled(false);
                     }
                 } catch (IOException ex)
                 {
